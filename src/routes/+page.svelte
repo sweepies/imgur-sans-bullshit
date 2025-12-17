@@ -2,7 +2,7 @@
 	import { navigating } from '$app/stores';
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
 	
-	$: isNavigating = $navigating !== null;
+	const isNavigating = $derived($navigating !== null);
 </script>
 
 <svelte:head>

@@ -1,31 +1,33 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	
-	export let images: any[];
-	export let imageIds: string[];
-	export let currentIndex = 0;
-	
-	const dispatch = createEventDispatcher();
+	let { 
+		images,
+		imageIds,
+		currentIndex = 0,
+		onclose,
+		onnext,
+		onprev
+	} = $props();
 	
 	function closeModal() {
-		dispatch('close');
+		onclose?.();
 	}
 	
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'ArrowLeft' && currentIndex > 0) {
-			currentIndex--;
-			dispatch('prev');
-		} else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
-			currentIndex++;
-			dispatch('next');
-		} else if (e.key === 'Escape') {
-			closeModal();
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if (e.key === 'ArrowLeft' && currentIndex > 0) {
+				onprev?.();
+			} else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+				onnext?.();
+			} else if (e.key === 'Escape') {
+				closeModal();
+			}
 		}
-	}
-	
-	$: if (typeof window !== 'undefined') {
-		window.addEventListener('keydown', handleKeydown);
-	}
+		
+		if (typeof window !== 'undefined') {
+			window.addEventListener('keydown', handleKeydown);
+			return () => window.removeEventListener('keydown', handleKeydown);
+		}
+	});
 	
 	function handleClick(e: MouseEvent) {
 		if (e.target === e.currentTarget) {
@@ -35,15 +37,13 @@
 	
 	function nextImage() {
 		if (currentIndex < images.length - 1) {
-			currentIndex++;
-			dispatch('next');
+			onnext?.();
 		}
 	}
 	
 	function prevImage() {
 		if (currentIndex > 0) {
-			currentIndex--;
-			dispatch('prev');
+			onprev?.();
 		}
 	}
 </script>
@@ -54,8 +54,8 @@
 	aria-modal="true"
 	aria-labelledby="modal-title"
 	tabindex="-1"
-	on:click={handleClick}
-	on:keydown={(e) => {
+	onclick={handleClick}
+	onkeydown={(e) => {
 		if (e.key === 'Escape') {
 			closeModal();
 		}
@@ -76,7 +76,7 @@
 		{#if images.length > 1}
 			<div class="flex gap-4 mt-4">
 				<button 
-					on:click={prevImage}
+					onclick={prevImage}
 					disabled={currentIndex === 0}
 					class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white"
 				>
@@ -86,7 +86,7 @@
 					{currentIndex + 1} / {images.length}
 				</span>
 				<button 
-					on:click={nextImage}
+					onclick={nextImage}
 					disabled={currentIndex === images.length - 1}
 					class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-white"
 				>

@@ -36,37 +36,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid Imgur URL or ID' });
 		}
 		
-		// Redirect to the image/album
-		const isAlbum = url.includes('/a/') || url.includes('album');
-		
-		// For gallery slugs, we need to check if it's an album
-		let targetUrl: string;
-		if (isAlbum) {
-			targetUrl = `/a/${id}`;
-		} else {
-			// Check if this ID is an album by querying the API
-			try {
-				const imgurClientId = platform?.env?.IMGUR_CLIENT_ID;
-				if (!imgurClientId) {
-					throw new Error('Imgur client ID not configured');
-				}
-				
-				const albumResponse = await fetch(`https://api.imgur.com/3/album/${id}`, {
-					headers: {
-						'Authorization': `Client-ID ${imgurClientId}`,
-					},
-				});
-				
-				if (albumResponse.ok) {
-					targetUrl = `/a/${id}`;
-				} else {
-					targetUrl = `/${id}`;
-				}
-			} catch {
-				targetUrl = `/${id}`;
-			}
-		}
-		
-		throw redirect(302, targetUrl);
+		// Always redirect to the unified endpoint
+		throw redirect(302, `/${id}`);
 	}
 };

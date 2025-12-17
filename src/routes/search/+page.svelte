@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let form: { error?: string } | undefined;
+	let { form } = $props();
 </script>
 
 <svelte:head>

@@ -21,6 +21,7 @@ export interface ImgurAlbum {
 export interface ImgurService {
   getImage: (id: string) => Promise<ImgurImage | null>;
   getAlbum: (id: string) => Promise<ImgurAlbum | null>;
+  getGallery: (id: string) => Promise<{ is_album: boolean; data: ImgurImage | ImgurAlbum } | null>;
   downloadImage: (url: string) => Promise<ArrayBuffer | null>;
 }
 
@@ -39,7 +40,7 @@ export function createImgurService(clientId: string): ImgurService {
         });
         
         if (galleryResponse.ok) {
-          const galleryData = await galleryResponse.json();
+          const galleryData = await galleryResponse.json() as { success: boolean; data: any };
           if (galleryData.success && galleryData.data) {
             return transformGalleryImage(galleryData.data);
           }
@@ -53,7 +54,7 @@ export function createImgurService(clientId: string): ImgurService {
         });
         
         if (imageResponse.ok) {
-          const imageData = await imageResponse.json();
+          const imageData = await imageResponse.json() as { success: boolean; data: any };
           if (imageData.success && imageData.data) {
             return transformImage(imageData.data);
           }
@@ -90,12 +91,35 @@ export function createImgurService(clientId: string): ImgurService {
         
         if (!response.ok) return null;
         
-        const data = await response.json();
+        const data = await response.json() as { success: boolean; data: any };
         if (!data.success || !data.data) return null;
         
         return transformAlbum(data.data);
       } catch (error) {
         console.error('Error fetching album:', error);
+        return null;
+      }
+    },
+    
+    async getGallery(id: string): Promise<{ is_album: boolean; data: ImgurImage | ImgurAlbum } | null> {
+      try {
+        const response = await fetch(`${IMGUR_API_BASE}/gallery/${id}`, {
+          headers: {
+            'Authorization': `Client-ID ${clientId}`,
+          },
+        });
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json() as { success: boolean; data: any };
+        if (!data.success || !data.data) return null;
+        
+        return {
+          is_album: data.data.is_album || false,
+          data: data.data.is_album ? transformAlbum(data.data) : transformGalleryImage(data.data)
+        };
+      } catch (error) {
+        console.error('Error fetching gallery:', error);
         return null;
       }
     },

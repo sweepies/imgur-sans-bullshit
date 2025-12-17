@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	
 	// Calculate page title
-	$: pageTitle = $page.status === 404 ? 'Not Found' : 'Server Error';
+	const pageTitle = $derived($page.status === 404 ? 'Not Found' : 'Server Error');
 </script>
 
 <svelte:head>
