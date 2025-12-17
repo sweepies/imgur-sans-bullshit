@@ -20,21 +20,21 @@
     // Extract the Imgur ID from the URL
     let imgurId = null;
     
-    // Check for gallery URLs
-    const galleryMatch = currentUrl.match(/imgur\.com\/gallery\/([a-zA-Z0-9-]+)/);
+    // Check for gallery URLs and extract ID (handle slugs)
+    const galleryMatch = currentUrl.match(/imgur\.com\/gallery\/(?:[a-zA-Z0-9-]+-)?([a-zA-Z0-9]{4,10})(?:\.[a-zA-Z]+)?/);
     if (galleryMatch) {
         imgurId = galleryMatch[1];
     }
-    // Check for album URLs
-    else if (currentUrl.match(/imgur\.com\/a\/([a-zA-Z0-9-]+)/)) {
-        const albumMatch = currentUrl.match(/imgur\.com\/a\/([a-zA-Z0-9-]+)/);
+    // Check for album URLs and extract ID (handle slugs)
+    else if (currentUrl.match(/imgur\.com\/a\/(?:[a-zA-Z0-9-]+-)?([a-zA-Z0-9]{4,10})(?:\.[a-zA-Z]+)?/)) {
+        const albumMatch = currentUrl.match(/imgur\.com\/a\/(?:[a-zA-Z0-9-]+-)?([a-zA-Z0-9]{4,10})(?:\.[a-zA-Z]+)?/);
         if (albumMatch) {
             imgurId = albumMatch[1];
         }
     }
-    // Check for single image URLs
-    else if (currentUrl.match(/imgur\.com\/([a-zA-Z0-9-]+)(?:\.[a-zA-Z]+)?$/)) {
-        const imageMatch = currentUrl.match(/imgur\.com\/([a-zA-Z0-9-]+)(?:\.[a-zA-Z]+)?$/);
+    // Check for single image URLs and extract ID (handle slugs)
+    else if (currentUrl.match(/imgur\.com\/(?:[a-zA-Z0-9-]+-)?([a-zA-Z0-9]{4,10})(?:\.[a-zA-Z]+)?$/)) {
+        const imageMatch = currentUrl.match(/imgur\.com\/(?:[a-zA-Z0-9-]+-)?([a-zA-Z0-9]{4,10})(?:\.[a-zA-Z]+)?$/);
         if (imageMatch) {
             imgurId = imageMatch[1];
         }
