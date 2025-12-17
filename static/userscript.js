@@ -1,9 +1,8 @@
 // ==UserScript==
-// @name         Imgur Sans Bullshit Redirector
-// @namespace    http://tampermonkey.net/
-// @version      1.0
+// @name         Imgur Sans Bullshit
+// @version      0.1
 // @description  Redirect Imgur links to Imgur Sans Bullshit
-// @author       Imgur Sans Bullshit
+// @author       sweepies
 // @match        https://imgur.com/*
 // @match        https://www.imgur.com/*
 // @match        https://i.imgur.com/*
