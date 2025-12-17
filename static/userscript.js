@@ -47,7 +47,7 @@
     // If we found an ID and we're not already on the clean viewer
     if (imgurId && !window.location.hostname.includes('imgur-sans-bullshit')) {
         // Determine if it's an album
-        const isAlbum = currentUrl.includes('/a/') || currentUrl.includes('/album/');
+        const isAlbum = currentUrl.includes('/a/') || currentUrl.includes('/album/') || currentUrl.includes('/gallery/');
         
         // Build the redirect URL
         const redirectUrl = isAlbum 
