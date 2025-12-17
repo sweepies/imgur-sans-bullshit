@@ -1,0 +1,170 @@
+export interface ImgurImage {
+  id: string;
+  title?: string;
+  description?: string;
+  type: string;
+  width?: number;
+  height?: number;
+  size?: number;
+  link: string;
+  animated?: boolean;
+}
+
+export interface ImgurAlbum {
+  id: string;
+  title?: string;
+  description?: string;
+  images_count: number;
+  images: ImgurImage[];
+}
+
+export interface ImgurService {
+  getImage: (id: string) => Promise<ImgurImage | null>;
+  getAlbum: (id: string) => Promise<ImgurAlbum | null>;
+  downloadImage: (url: string) => Promise<ArrayBuffer | null>;
+}
+
+const IMGUR_API_BASE = 'https://api.imgur.com/3';
+const IMGUR_CDN_BASE = 'https://i.imgur.com';
+
+export function createImgurService(clientId: string): ImgurService {
+  return {
+    async getImage(id: string): Promise<ImgurImage | null> {
+      try {
+        // Try gallery API first
+        const galleryResponse = await fetch(`${IMGUR_API_BASE}/gallery/image/${id}`, {
+          headers: {
+            'Authorization': `Client-ID ${clientId}`,
+          },
+        });
+        
+        if (galleryResponse.ok) {
+          const galleryData = await galleryResponse.json();
+          if (galleryData.success && galleryData.data) {
+            return transformGalleryImage(galleryData.data);
+          }
+        }
+        
+        // Try image API
+        const imageResponse = await fetch(`${IMGUR_API_BASE}/image/${id}`, {
+          headers: {
+            'Authorization': `Client-ID ${clientId}`,
+          },
+        });
+        
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          if (imageData.success && imageData.data) {
+            return transformImage(imageData.data);
+          }
+        }
+        
+        // Fallback: try to construct from CDN
+        const extensions = ['jpg', 'png', 'gif', 'webp', 'mp4'];
+        for (const ext of extensions) {
+          const testUrl = `${IMGUR_CDN_BASE}/${id}.${ext}`;
+          const headResponse = await fetch(testUrl, { method: 'HEAD' });
+          if (headResponse.ok) {
+            return {
+              id,
+              link: testUrl,
+              type: ext === 'mp4' ? 'video/mp4' : `image/${ext}`,
+            };
+          }
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('Error fetching image:', error);
+        return null;
+      }
+    },
+    
+    async getAlbum(id: string): Promise<ImgurAlbum | null> {
+      try {
+        const response = await fetch(`${IMGUR_API_BASE}/album/${id}`, {
+          headers: {
+            'Authorization': `Client-ID ${clientId}`,
+          },
+        });
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        if (!data.success || !data.data) return null;
+        
+        return transformAlbum(data.data);
+      } catch (error) {
+        console.error('Error fetching album:', error);
+        return null;
+      }
+    },
+    
+    async downloadImage(url: string): Promise<ArrayBuffer | null> {
+      try {
+        console.log('Attempting to download:', url);
+        // For Cloudflare Workers, we need to use the direct CDN URL
+        // Add a user agent to avoid being blocked
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          console.error('Download failed:', url, response.status, response.statusText);
+          const body = await response.text();
+          console.error('Response body:', body.slice(0, 200));
+          return null;
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        console.log('Downloaded image size:', arrayBuffer.byteLength, 'bytes');
+        return arrayBuffer;
+      } catch (error) {
+        console.error('Error downloading image:', error);
+        return null;
+      }
+    },
+  };
+}
+
+function transformImage(data: any): ImgurImage {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    type: data.type,
+    width: data.width,
+    height: data.height,
+    size: data.size,
+    link: data.link,
+    animated: data.animated,
+  };
+}
+
+function transformGalleryImage(data: any): ImgurImage {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    type: data.type || 'image/jpeg',
+    width: data.width,
+    height: data.height,
+    size: data.size,
+    link: data.link || `${IMGUR_CDN_BASE}/${data.id}.${data.type?.split('/')[1] || 'jpg'}`,
+    animated: data.animated,
+  };
+}
+
+function transformAlbum(data: any): ImgurAlbum {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    images_count: data.images_count || data.images?.length || 0,
+    images: data.images?.map(transformImage) || [],
+  };
+}

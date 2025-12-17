@@ -1,0 +1,38 @@
+name = "imgur-sans-bullshit"
+main = "./.svelte-kit/cloudflare/worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./.svelte-kit/cloudflare/assets"
+binding = "ASSETS"
+
+# R2 bucket configuration for image caching
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "imgur-cache"
+
+# D1 database configuration for metadata storage
+[[d1_databases]]
+binding = "D1_DATABASE"
+database_name = "imgur-sans-bullshit"
+database_id = "your-database-id"
+
+# Environment variables
+[vars]
+IMGUR_CLIENT_ID = "your-imgur-client-id"
+
+# Optional: Staging environment configuration
+[env.staging]
+name = "imgur-sans-bullshit-staging"
+
+[[env.staging.r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "imgur-cache-staging"
+
+[[env.staging.d1_databases]]
+binding = "D1_DATABASE"
+database_name = "imgur-sans-bullshit-staging"
+
+[env.staging.vars]
+IMGUR_CLIENT_ID = "your-staging-imgur-client-id"
