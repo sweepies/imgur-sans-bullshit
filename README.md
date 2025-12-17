@@ -33,7 +33,7 @@ Enhance your Imgur experience with the userscript! It automatically redirects Im
 
 
 2. Click this link:
-   [Install Userscript](raw/userscript.js)
+   [Install Userscript](https://raw.githubusercontent.com/sweepies/imgur-sans-bullshit/refs/heads/main/static/userscript.js)
 
 3. Your browser will prompt you to install the script - click "Install"
 
