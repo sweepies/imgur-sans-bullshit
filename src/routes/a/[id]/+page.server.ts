@@ -2,10 +2,21 @@ import type { PageServerLoad } from './$types';
 import { createR2Service } from '$lib/services/r2';
 import { createD1Service } from '$lib/services/d1';
 import { createImgurService } from '$lib/services/imgur';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params, platform, setHeaders }) => {
 	const { id } = params;
+	
+	// Handle slugs with titles (e.g., "economy-is-great-just-ask-him-9puuHei")
+	// Extract the actual Imgur ID from the end
+	if (id.includes('-')) {
+		const parts = id.split('-');
+		const potentialId = parts[parts.length - 1];
+		// Imgur IDs are typically 5-7 alphanumeric characters
+		if (/^[a-zA-Z0-9]{5,7}$/.test(potentialId)) {
+			throw redirect(302, `/a/${potentialId}`);
+		}
+	}
 	
 	if (!platform?.env) {
 		throw error(500, 'Service not available');
