@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 export interface R2Service {
   get: (key: string) => Promise<Response | null>;
   put: (key: string, data: ArrayBuffer, metadata: Record<string, string>) => Promise<void>;

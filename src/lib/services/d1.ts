@@ -22,6 +22,8 @@ export interface AlbumMetadata {
   is_deleted: boolean;
 }
 
+/// <reference types="@cloudflare/workers-types" />
+
 export interface D1Service {
   // Image operations
   getImage: (id: string) => Promise<ImageMetadata | null>;
@@ -51,7 +53,7 @@ export function createD1Service(db: D1Database): D1Service {
       if (!db) return null;
       
       const result = await db.prepare('SELECT * FROM images WHERE id = ?').bind(id).first();
-      return result as ImageMetadata || null;
+      return result ? result as unknown as ImageMetadata : null;
     },
     
     async setImage(image: ImageMetadata): Promise<void> {
@@ -94,7 +96,7 @@ export function createD1Service(db: D1Database): D1Service {
       if (!db) return null;
       
       const result = await db.prepare('SELECT * FROM albums WHERE id = ?').bind(id).first();
-      return result as AlbumMetadata || null;
+      return result ? result as unknown as AlbumMetadata : null;
     },
     
     async setAlbum(album: AlbumMetadata): Promise<void> {
