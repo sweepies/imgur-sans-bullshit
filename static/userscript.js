@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Imgur Sans Bullshit
-// @version      0.5
+// @version      0.6
 // @description  Redirect Imgur links to Imgur Sans Bullshit
 // @author       sweepies
 // @match        https://imgur.com/*
