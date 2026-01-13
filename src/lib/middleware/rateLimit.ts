@@ -1,53 +1,29 @@
-interface RateLimitStore {
-  [key: string]: {
-    count: number;
-    resetTime: number;
-  };
-}
+import { error } from '@sveltejs/kit';
+import { createRateLimitService } from '$lib/services/ratelimit';
 
-// In-memory rate limit store (for Cloudflare Workers, this is per-instance)
-const store: RateLimitStore = {};
+const CONFIG = {
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	maxRequests: 100
+};
 
-export interface RateLimitOptions {
-  windowMs: number;
-  maxRequests: number;
-}
+export async function checkRateLimit(
+	request: Request,
+	platform: App.Platform,
+	endpoint: string
+): Promise<void> {
+	const ip =
+		request.headers.get('CF-Connecting-IP') ||
+		request.headers.get('X-Forwarded-For') ||
+		'unknown';
 
-export interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  resetTime: number;
-}
+	const limiter = createRateLimitService(platform.env.D1_DATABASE, CONFIG);
+	const result = await limiter.checkLimit(ip, endpoint);
 
-export function createRateLimit(options: RateLimitOptions) {
-  const { windowMs, maxRequests } = options;
-  
-  return function rateLimit(clientAddress: string): RateLimitResult {
-    const now = Date.now();
-    const key = clientAddress || 'unknown';
-    
-    // Clean up expired entries
-    if (store[key] && now > store[key].resetTime) {
-      delete store[key];
-    }
-    
-    // Initialize or increment counter
-    if (!store[key]) {
-      store[key] = {
-        count: 1,
-        resetTime: now + windowMs,
-      };
-    } else {
-      store[key].count++;
-    }
-    
-    const remaining = Math.max(0, maxRequests - store[key].count);
-    const allowed = store[key].count <= maxRequests;
-    
-    return {
-      allowed,
-      remaining,
-      resetTime: store[key].resetTime
-    };
-  };
+	if (!result.allowed) {
+		const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
+		throw error(429, {
+			message: `Too many requests. Retry after ${retryAfter} seconds`,
+			retryAfter
+		});
+	}
 }

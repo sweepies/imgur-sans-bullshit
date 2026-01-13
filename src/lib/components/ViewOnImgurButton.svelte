@@ -1,11 +1,14 @@
 <script lang="ts">
-	let { id, type = 'image', children } = $props();
+	let { id = '', type = 'image', url, children } = $props();
 	
-	const url = $derived(type === 'album' ? `https://imgur.com/a/${id}` : `https://imgur.com/${id}`);
+	// Prefer explicit URL when provided; fall back to legacy Imgur construction
+	const resolvedUrl = $derived(
+		url ?? (id ? (type === 'album' ? `https://imgur.com/a/${id}` : `https://imgur.com/${id}`) : '#')
+	);
 </script>
 
 <a
-	href={url}
+	href={resolvedUrl}
 	target="_blank"
 	rel="noopener noreferrer"
 	class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
@@ -16,6 +19,6 @@
 	{#if children}
 		{@render children()}
 	{:else}
-		View on Imgur
+		View at source
 	{/if}
 </a>

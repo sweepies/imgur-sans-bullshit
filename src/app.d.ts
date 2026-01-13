@@ -10,29 +10,8 @@ declare global {
 		// interface Error {}
 		interface Locals {}
 		interface PageData {
-			image?: {
-				id: string;
-				url: string;
-				title?: string;
-				description?: string;
-				type: string;
-				width?: number;
-				height?: number;
-				size?: number;
-				cached_at: number;
-				last_checked: number;
-				is_deleted: boolean;
-			};
-			album?: {
-				id: string;
-				title?: string;
-				description?: string;
-				images_count: number;
-				cached_at: number;
-				last_checked: number;
-				is_deleted: boolean;
-			};
-			images?: any[];
+			album?: import('$lib/services/d1').GalleryMetadata | null;
+			images?: import('$lib/services/d1').ImageMetadata[];
 			imageIds?: string[];
 		}
 		// interface PageState {}

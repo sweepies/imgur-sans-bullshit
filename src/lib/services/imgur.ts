@@ -76,7 +76,6 @@ export function createImgurService(clientId: string): ImgurService {
         
         return null;
       } catch (error) {
-        console.error('Error fetching image:', error);
         return null;
       }
     },
@@ -96,7 +95,6 @@ export function createImgurService(clientId: string): ImgurService {
         
         return transformAlbum(data.data);
       } catch (error) {
-        console.error('Error fetching album:', error);
         return null;
       }
     },
@@ -119,14 +117,12 @@ export function createImgurService(clientId: string): ImgurService {
           data: data.data.is_album ? transformAlbum(data.data) : transformGalleryImage(data.data)
         };
       } catch (error) {
-        console.error('Error fetching gallery:', error);
         return null;
       }
     },
     
     async downloadImage(url: string): Promise<ArrayBuffer | null> {
       try {
-        console.log('Attempting to download:', url);
         // For Cloudflare Workers, we need to use the direct CDN URL
         // Add a user agent to avoid being blocked
         const response = await fetch(url, {
@@ -134,27 +130,24 @@ export function createImgurService(clientId: string): ImgurService {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           },
         });
-        
-        console.log('Response status:', response.status, response.statusText);
-        
+
         if (!response.ok) {
-          console.error('Download failed:', url, response.status, response.statusText);
-          const body = await response.text();
-          console.error('Response body:', body.slice(0, 200));
           return null;
         }
-        
+
         const arrayBuffer = await response.arrayBuffer();
-        console.log('Downloaded image size:', arrayBuffer.byteLength, 'bytes');
         return arrayBuffer;
       } catch (error) {
-        console.error('Error downloading image:', error);
         return null;
       }
     },
   };
 }
 
+/**
+ * Transform Imgur API response to ImgurImage.
+ * Uses any due to varying Imgur API response structures.
+ */
 function transformImage(data: any): ImgurImage {
   return {
     id: data.id,
@@ -169,6 +162,10 @@ function transformImage(data: any): ImgurImage {
   };
 }
 
+/**
+ * Transform Imgur gallery API response to ImgurImage.
+ * Uses any due to varying Imgur API response structures.
+ */
 function transformGalleryImage(data: any): ImgurImage {
   return {
     id: data.id,
@@ -183,6 +180,10 @@ function transformGalleryImage(data: any): ImgurImage {
   };
 }
 
+/**
+ * Transform Imgur API response to ImgurAlbum.
+ * Uses any due to varying Imgur API response structures.
+ */
 function transformAlbum(data: any): ImgurAlbum {
   return {
     id: data.id,

@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { navigating } from '$app/stores';
 	import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
-	
+
 	const isNavigating = $derived($navigating !== null);
+
+	let urlInput = $state('');
+
+	function handleSubmit(e: SubmitEvent) {
+		if (!urlInput || urlInput.trim() === '') {
+			e.preventDefault();
+			return;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -15,18 +24,20 @@
 		View Imgur images without the bullshit
 	</p>
 	<div class="max-w-md mx-auto">
-		<form class="flex gap-2" method="post" action="/search">
+		<form class="flex gap-2" method="get" action="/view" onsubmit={handleSubmit}>
 			<input
 				type="text"
-				name="q"
+				name="url"
+				bind:value={urlInput}
 				placeholder="Enter Imgur URL or ID"
 				class="flex-1 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 				disabled={isNavigating}
+				required
 			/>
 			<button
 				type="submit"
 				class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-				disabled={isNavigating}
+				disabled={isNavigating || !urlInput.trim()}
 			>
 				{#if isNavigating}
 					<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
